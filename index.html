@@ -270,7 +270,8 @@ const HARDCODED_URL = 'https://script.google.com/macros/s/AKfycbyH-m6T2RtxcLb_F5
 
 // ── CONSTANTS ───────────────────────────────────────────────────────────────
 const TODAY = new Date();
-const TODAY_KEY = TODAY.toISOString().slice(0,10);
+function localDateKey(d){ return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
+const TODAY_KEY = localDateKey(TODAY);
 const DAYS = ['Su','Mo','Tu','We','Th','Fr','Sa'];
 const CAT_STYLE = {
   Personal:{bg:'#F0EEFB',color:'#3C3489'},
@@ -454,7 +455,7 @@ function getStreak(id){
   const c = S.checks[id]||{};
   let d = new Date(TODAY), s = 0;
   for(let i=0;i<400;i++){
-    const k = d.toISOString().slice(0,10);
+    const k = localDateKey(d);
     if(c[k]) s++; else if(k!==TODAY_KEY) break;
     d.setDate(d.getDate()-1);
   }
@@ -519,7 +520,7 @@ function renderWeekly(){
         const target=h.target||1; let done=0;
         const dots=DAYS.map((l,i)=>{
           const dd=new Date(ws); dd.setDate(ws.getDate()+i);
-          const dk=dd.toISOString().slice(0,10);
+          const dk=localDateKey(dd);
           const isDone=!!(S.checks[h.id]||{})[dk];
           const isToday=dk===TODAY_KEY;
           if(isDone)done++;
@@ -604,7 +605,7 @@ function exportCSV(){
     const c=S.checks[h.id]||{};
     for(const [date,val] of Object.entries(c)) if(val) rows.push(['quarterly',h.id,h.name,date,'1','']);
   }
-  for(const t of S.todos) rows.push(['todo',t.id,t.name,new Date(t.created).toISOString().slice(0,10),t.done?'done':'pending',t.cat]);
+  for(const t of S.todos) rows.push(['todo',t.id,t.name,localDateKey(new Date(t.created)),t.done?'done':'pending',t.cat]);
   const csv=rows.map(r=>r.map(c=>`"${c}"`).join(',')).join('\n');
   const a=document.createElement('a');
   a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));
