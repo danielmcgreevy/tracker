@@ -46,6 +46,11 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 .footer-btn{width:100%;padding:8px 12px;background:none;border:1px solid var(--border-strong);border-radius:var(--r-sm);font-family:'DM Sans',sans-serif;font-size:12px;color:var(--text-2);cursor:pointer;display:flex;align-items:center;gap:7px;transition:all .15s}
 .footer-btn:hover{background:var(--bg);color:var(--text)}
 
+/* Loading overlay */
+.loading{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;z-index:999;flex-direction:column;gap:12px}
+.loading-dot{width:8px;height:8px;border-radius:50%;background:var(--text-3);animation:pulse 1s infinite}
+.loading-label{font-size:13px;font-family:'DM Mono',monospace;color:var(--text-3)}
+
 /* Main */
 .main{padding:36px 40px;max-width:700px}
 .page{display:none}.page.active{display:block}
@@ -149,7 +154,14 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 </style>
 </head>
 <body>
-<div class="shell">
+
+<!-- Loading screen — shown until Sheet data arrives -->
+<div class="loading" id="loading">
+  <div class="loading-dot"></div>
+  <div class="loading-label">Loading your data…</div>
+</div>
+
+<div class="shell" id="app" style="display:none">
   <nav class="sidebar">
     <div class="sidebar-logo">Tracker</div>
     <div class="nav-item active" onclick="showPage('daily',this)">
@@ -167,7 +179,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
     <div class="sidebar-footer">
       <div class="sync-status">
         <div class="sync-dot" id="sync-dot"></div>
-        <span id="sync-label">Not configured</span>
+        <span id="sync-label">Loading…</span>
       </div>
       <button class="footer-btn" onclick="exportCSV()">
         <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M8 2v8M5 7l3 3 3-3M3 12h10"/></svg>
@@ -288,34 +300,9 @@ const CAT_STYLE = {
 };
 const CAT_ORDER = ['Personal','Work','Campaign','Health','Finance','Home','Other'];
 
+// DEFAULTS only used if Sheet is completely empty (first ever load)
 const DEFAULTS = {
-  dailyHabits:[
-    {id:'d1',name:'Flossed'},{id:'d2',name:'AM mobility (5–10 min)'},
-    {id:'d3',name:'PM mobility / core'},{id:'d4',name:'Read 10–20 min'},
-    {id:'d5',name:'Water before caffeine'},{id:'d6',name:'Phone out of bed'}
-  ],
-  weeklyHabits:[
-    {id:'w1',name:'Long outdoor block (trail run / hike)',target:1},
-    {id:'w2',name:'Swim session',target:1},
-    {id:'w3',name:'Yoga / long mobility (~60 min)',target:1},
-    {id:'w4',name:'Sheets',target:1},{id:'w5',name:'Nails',target:1}
-  ],
-  quarterlyHabits:[
-    {id:'q1',name:'Registered for a race'},
-    {id:'q2',name:'Big outdoor experience (e.g. camping)'},
-    {id:'q3',name:'PT / massage / bodywork'},
-    {id:'q4',name:'Wardrobe upgrade or tailoring'}
-  ],
-  todos:[
-    {id:'t1',name:'Jury duty response',cat:'Personal',done:false,created:1},
-    {id:'t2',name:'2351 backgrounder',cat:'Work',done:false,created:2},
-    {id:'t3',name:'Update issues page',cat:'Campaign',done:false,created:3},
-    {id:'t4',name:'Add 3–5 top issues to home page',cat:'Campaign',done:false,created:4},
-    {id:'t5',name:'Update donate links (autofill amount + website reference)',cat:'Campaign',done:false,created:5},
-    {id:'t6',name:'Update bio',cat:'Campaign',done:false,created:6},
-    {id:'t7',name:'Add quick bio to homepage',cat:'Campaign',done:false,created:7}
-  ],
-  checks:{}
+  dailyHabits:[], weeklyHabits:[], quarterlyHabits:[], todos:[], checks:{}
 };
 
 let S = JSON.parse(JSON.stringify(DEFAULTS));
@@ -332,34 +319,37 @@ function quarterLabel(){
   return `Q${q} ${TODAY.getFullYear()} · ${mo[s[q-1]]}–${mo[e[q-1]]}`;
 }
 
-// Past N days for backdate picker
 function getBackdateDays(){
   const days=[];
   for(let i=1;i<=BACKDATE_DAYS;i++){
-    const d=new Date(TODAY);
-    d.setDate(d.getDate()-i);
-    days.push({key:localDateKey(d), label:d.toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'})});
+    const d=new Date(TODAY);d.setDate(d.getDate()-i);
+    days.push({key:localDateKey(d),label:d.toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'})});
   }
   return days;
 }
 
-// ── SYNC ─────────────────────────────────────────────────────────────────────
+// ── SYNC — Sheet is the single source of truth ────────────────────────────────
 function setSyncStatus(status,label){
-  const dot=document.getElementById('sync-dot');
-  const lbl=document.getElementById('sync-label');
-  dot.className='sync-dot'+(status?' '+status:'');
-  lbl.textContent=label;
+  document.getElementById('sync-dot').className='sync-dot'+(status?' '+status:'');
+  document.getElementById('sync-label').textContent=label;
 }
 function getScriptURL(){ return HARDCODED_URL||localStorage.getItem('tracker-script-url')||''; }
 
+function showApp(){
+  document.getElementById('loading').style.display='none';
+  document.getElementById('app').style.display='grid';
+}
+
 function loadFromSheets(){
   const url=getScriptURL();
-  if(!url){setSyncStatus('','Not configured');return Promise.resolve(false);}
+  if(!url){ setSyncStatus('','Not configured'); showApp(); return Promise.resolve(false); }
   setSyncStatus('syncing','Loading…');
   return new Promise((resolve)=>{
     const cbName='_trackerCb_'+Date.now();
     const script=document.createElement('script');
-    const timer=setTimeout(()=>{cleanup();setSyncStatus('err','Load timed out');resolve(false);},10000);
+    const timer=setTimeout(()=>{
+      cleanup(); setSyncStatus('err','Timed out'); showApp(); resolve(false);
+    },10000);
     function cleanup(){clearTimeout(timer);delete window[cbName];if(script.parentNode)script.parentNode.removeChild(script);}
     window[cbName]=function(j){
       cleanup();
@@ -370,13 +360,17 @@ function loadFromSheets(){
           if(j.data.quarterlyHabits)S.quarterlyHabits=j.data.quarterlyHabits;
           if(j.data.todos)S.todos=j.data.todos;
           if(j.data.checks)S.checks=j.data.checks;
-          setSyncStatus('ok','Synced');resolve(true);
+          setSyncStatus('ok','Synced');
         } else {
-          saveToSheets().then(()=>resolve(true));
+          // Truly empty sheet — first ever load, nothing to show
+          setSyncStatus('ok','Ready');
         }
-      } else {setSyncStatus('err','Load failed');resolve(false);}
+        showApp(); resolve(true);
+      } else {
+        setSyncStatus('err','Load failed'); showApp(); resolve(false);
+      }
     };
-    script.onerror=()=>{cleanup();setSyncStatus('err','Could not reach script');resolve(false);};
+    script.onerror=()=>{cleanup();setSyncStatus('err','Could not reach script');showApp();resolve(false);};
     script.src=url+'?action=load&callback='+cbName;
     document.head.appendChild(script);
   });
@@ -392,10 +386,9 @@ async function saveToSheets(){
   }catch(e){setSyncStatus('err','Save failed');}
 }
 
+// Save only goes to Sheets — no localStorage
 function scheduleSave(){ if(syncTimer)clearTimeout(syncTimer); syncTimer=setTimeout(saveToSheets,1200); }
-function saveLocal(){ try{localStorage.setItem('tracker-data',JSON.stringify(S));}catch(e){} }
-function loadLocal(){ try{const r=localStorage.getItem('tracker-data');if(r)S=JSON.parse(r);}catch(e){} }
-function save(){ saveLocal(); scheduleSave(); }
+function save(){ scheduleSave(); }
 
 // ── HABITS ───────────────────────────────────────────────────────────────────
 function addHabit(type){
@@ -451,10 +444,9 @@ function renderDaily(){
       <div class="prog-track"><div class="prog-fill" style="width:${pct}%"></div></div>
       <div class="sum-pct">${pct}%</div>
     </div>`:'';
-
   const pastDays=getBackdateDays();
   document.getElementById('daily-list').innerHTML=habits.length
-    ? habits.map(h=>{
+    ?habits.map(h=>{
         const done=!!(S.checks[h.id]||{})[TODAY_KEY];
         const streak=getStreak(h.id);
         const backdots=pastDays.map(pd=>{
@@ -469,10 +461,7 @@ function renderDaily(){
               ${streak>1?`<span class="streak">${streak}d</span>`:''}
               <button class="del" onclick="delHabit('daily','${h.id}')">×</button>
             </div>
-            <div class="backdate-row">
-              <span class="bdate-label">Back:</span>
-              ${backdots}
-            </div>
+            <div class="backdate-row"><span class="bdate-label">Back:</span>${backdots}</div>
           </div>
         </div>`;
       }).join('')
@@ -484,7 +473,7 @@ function renderWeekly(){
   const ws=weekStart();
   document.getElementById('weekly-sub').textContent='Week of '+ws.toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'});
   document.getElementById('weekly-list').innerHTML=habits.length
-    ? habits.map(h=>{
+    ?habits.map(h=>{
         const target=h.target||1;let done=0;
         const dots=DAYS.map((l,i)=>{
           const dd=new Date(ws);dd.setDate(ws.getDate()+i);
@@ -538,34 +527,29 @@ function renderTodos(){
   const activeCats=CAT_ORDER.filter(c=>grouped[c]&&(grouped[c].active.length||grouped[c].done.length));
   const total=S.todos.length,doneN=S.todos.filter(t=>t.done).length;
   document.getElementById('todos-sub').textContent=total?`${doneN} of ${total} complete`:'All clear';
-
   document.getElementById('todo-list').innerHTML=activeCats.length
-    ? activeCats.map(cat=>{
+    ?activeCats.map(cat=>{
         const g=grouped[cat];
         const cs=CAT_STYLE[cat]||CAT_STYLE.Other;
         const isOpen=!!completedOpen[cat];
-
         const activeItems=g.active.map(t=>`<div class="todo-item">
           <div class="tchk" onclick="toggleTodo('${t.id}')"></div>
           <span class="ttext">${t.name}</span>
           <button class="del" style="opacity:0" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=0" onclick="delTodo('${t.id}')">×</button>
         </div>`).join('');
-
         const doneItems=g.done.map(t=>`<div class="todo-item">
           <div class="tchk done" onclick="toggleTodo('${t.id}')">✓</div>
           <span class="ttext done">${t.name}</span>
           <button class="del" style="opacity:0" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=0" onclick="delTodo('${t.id}')">×</button>
         </div>`).join('');
-
         const completedBlock=g.done.length?`
           <button class="completed-toggle" onclick="toggleCompleted('${cat}')">
             <span class="toggle-arrow${isOpen?' open':''}" id="arrow-${cat}">▶</span>
             ${g.done.length} completed
           </button>
           <div class="completed-section${isOpen?' open':''}" id="completed-${cat}">
-            <div class="todo-card" style="margin-bottom:8px;border-color:var(--border)">${doneItems}</div>
+            <div class="todo-card" style="margin-bottom:8px">${doneItems}</div>
           </div>`:'';
-
         return `<div class="cat-block">
           <div class="cat-hdr">
             <span class="cat-pill" style="background:${cs.bg};color:${cs.color}">${cat}</span>
@@ -593,15 +577,19 @@ function exportCSV(){
 
 // ── CONFIG ────────────────────────────────────────────────────────────────────
 function showConfig(){
-  const modal=document.getElementById('config-modal');modal.style.display='flex';
+  document.getElementById('config-modal').style.display='flex';
   document.getElementById('script-url-input').value=localStorage.getItem('tracker-script-url')||HARDCODED_URL||'';
 }
-function closeConfig(){document.getElementById('config-modal').style.display='none';}
+function closeConfig(){ document.getElementById('config-modal').style.display='none'; }
 async function saveConfig(){
   const url=document.getElementById('script-url-input').value.trim();
   if(!url){alert('Please enter a URL');return;}
-  localStorage.setItem('tracker-script-url',url);closeConfig();
-  const ok=await loadFromSheets();if(ok)render();
+  localStorage.setItem('tracker-script-url',url);
+  closeConfig();
+  document.getElementById('loading').style.display='flex';
+  document.getElementById('app').style.display='none';
+  const ok=await loadFromSheets();
+  if(ok)render();
   else setSyncStatus('err','Could not connect — check URL');
 }
 document.getElementById('config-modal').addEventListener('click',function(e){if(e.target===this)closeConfig();});
@@ -614,9 +602,8 @@ function showPage(page,el){
   el.classList.add('active');
 }
 
-// ── INIT ──────────────────────────────────────────────────────────────────────
+// ── INIT — always wait for Sheet, never read localStorage ─────────────────────
 async function init(){
-  loadLocal();render();
   const ok=await loadFromSheets();
   if(ok)render();
 }
