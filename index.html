@@ -7,28 +7,10 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,300;0,400;0,500;1,400&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
-:root {
-  --bg: #F7F5F0;
-  --surface: #FFFFFF;
-  --border: rgba(0,0,0,0.08);
-  --border-strong: rgba(0,0,0,0.15);
-  --text: #1A1A18;
-  --text-2: #6B6B65;
-  --text-3: #A0A09A;
-  --green: #2D7D5A;
-  --green-l: #E8F5EE;
-  --green-m: #5DB88A;
-  --blue: #2563A8;
-  --coral: #B84C2E;
-  --r: 12px;
-  --r-sm: 7px;
-  --sh: 0 1px 3px rgba(0,0,0,0.06),0 1px 2px rgba(0,0,0,0.04);
-}
+:root{--bg:#F7F5F0;--surface:#FFFFFF;--border:rgba(0,0,0,0.08);--border-strong:rgba(0,0,0,0.15);--text:#1A1A18;--text-2:#6B6B65;--text-3:#A0A09A;--green:#2D7D5A;--green-l:#E8F5EE;--green-m:#5DB88A;--blue:#2563A8;--coral:#B84C2E;--r:12px;--r-sm:7px;--sh:0 1px 3px rgba(0,0,0,0.06),0 1px 2px rgba(0,0,0,0.04)}
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;font-size:15px;line-height:1.5}
 .shell{display:grid;grid-template-columns:220px 1fr;min-height:100vh}
-
-/* Sidebar */
 .sidebar{background:var(--surface);border-right:1px solid var(--border);padding:28px 0;position:sticky;top:0;height:100vh;display:flex;flex-direction:column}
 .sidebar-logo{padding:0 20px 22px;font-family:'DM Mono',monospace;font-size:12px;font-weight:500;color:var(--text-3);letter-spacing:.1em;text-transform:uppercase;border-bottom:1px solid var(--border);margin-bottom:10px}
 .nav-item{display:flex;align-items:center;gap:10px;padding:10px 20px;cursor:pointer;color:var(--text-2);font-size:14px;transition:all .15s;border-left:2px solid transparent;user-select:none}
@@ -39,42 +21,31 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 .sidebar-footer{margin-top:auto;padding:16px 20px 0;border-top:1px solid var(--border);display:flex;flex-direction:column;gap:8px}
 .sync-status{font-size:11px;font-family:'DM Mono',monospace;color:var(--text-3);display:flex;align-items:center;gap:6px}
 .sync-dot{width:6px;height:6px;border-radius:50%;background:var(--text-3);flex-shrink:0}
-.sync-dot.ok{background:var(--green)}
-.sync-dot.err{background:var(--coral)}
+.sync-dot.ok{background:var(--green)}.sync-dot.err{background:var(--coral)}
 .sync-dot.syncing{background:#C47B1E;animation:pulse 1s infinite}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
 .footer-btn{width:100%;padding:8px 12px;background:none;border:1px solid var(--border-strong);border-radius:var(--r-sm);font-family:'DM Sans',sans-serif;font-size:12px;color:var(--text-2);cursor:pointer;display:flex;align-items:center;gap:7px;transition:all .15s}
 .footer-btn:hover{background:var(--bg);color:var(--text)}
-
-/* Loading overlay */
 .loading{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;z-index:999;flex-direction:column;gap:12px}
 .loading-dot{width:8px;height:8px;border-radius:50%;background:var(--text-3);animation:pulse 1s infinite}
 .loading-label{font-size:13px;font-family:'DM Mono',monospace;color:var(--text-3)}
-
-/* Main */
 .main{padding:36px 40px;max-width:700px}
 .page{display:none}.page.active{display:block}
 .page-header{margin-bottom:26px}
 .page-title{font-size:22px;font-weight:500;letter-spacing:-.02em;margin-bottom:3px}
 .page-sub{font-size:12px;color:var(--text-3);font-family:'DM Mono',monospace}
-
-/* Add bar */
 .add-bar{display:flex;gap:8px;margin-bottom:20px;background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:10px 12px;box-shadow:var(--sh)}
 .add-bar input{flex:1;border:none;outline:none;font-family:'DM Sans',sans-serif;font-size:14px;color:var(--text);background:transparent}
 .add-bar input::placeholder{color:var(--text-3)}
 .add-bar select{border:none;outline:none;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--text-2);background:transparent;cursor:pointer}
 .add-bar button{padding:6px 14px;background:var(--text);color:#fff;border:none;border-radius:var(--r-sm);font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;cursor:pointer;transition:opacity .15s;white-space:nowrap}
 .add-bar button:hover{opacity:.8}
-
-/* Summary */
 .summary{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:16px 20px;margin-bottom:14px;box-shadow:var(--sh);display:flex;align-items:center;gap:16px}
 .sum-num{font-family:'DM Mono',monospace;font-size:24px;font-weight:500;letter-spacing:-.02em}
 .sum-label{font-size:12px;color:var(--text-3)}
 .prog-track{flex:1;height:3px;background:var(--border);border-radius:2px;overflow:hidden}
 .prog-fill{height:100%;background:var(--green);border-radius:2px;transition:width .4s cubic-bezier(.4,0,.2,1)}
 .sum-pct{font-family:'DM Mono',monospace;font-size:13px;color:var(--text-2)}
-
-/* Habit cards */
 .hcard{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:13px 16px;margin-bottom:8px;box-shadow:var(--sh);display:flex;align-items:center;gap:12px;transition:border-color .2s}
 .hcard.complete{border-color:var(--green-m)}
 .hcard-weekly{flex-direction:column;align-items:stretch}
@@ -89,23 +60,17 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 .del{border:none;background:none;color:var(--text-3);cursor:pointer;font-size:17px;line-height:1;padding:2px 4px;opacity:0;transition:opacity .15s}
 .hcard:hover .del{opacity:1}
 .del:hover{color:var(--coral)}
-
-/* Backdate picker */
 .backdate-row{display:flex;gap:4px;margin-top:8px;padding-top:8px;border-top:1px solid var(--border)}
 .bdate{padding:3px 8px;font-size:11px;font-family:'DM Mono',monospace;border:1px solid var(--border);border-radius:var(--r-sm);cursor:pointer;background:var(--bg);color:var(--text-3);transition:all .15s;white-space:nowrap}
 .bdate:hover{border-color:var(--green-m);color:var(--text-2)}
 .bdate.done{background:var(--green-l);border-color:var(--green-m);color:var(--green)}
 .bdate-label{font-size:11px;color:var(--text-3);display:flex;align-items:center;margin-right:4px;white-space:nowrap}
-
-/* Week dots */
 .wdots{display:flex;gap:4px;margin-top:10px}
 .wdot{width:28px;height:28px;border-radius:6px;border:1px solid var(--border);background:var(--bg);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:10px;font-family:'DM Mono',monospace;color:var(--text-3);transition:all .15s}
 .wdot:hover{border-color:var(--green-m)}
 .wdot.done{background:var(--green);border-color:var(--green);color:#fff;font-size:11px}
 .wdot.today{border-color:var(--blue);color:var(--blue)}
 .wdot.today.done{border-color:var(--green);color:#fff}
-
-/* Quarterly */
 .q-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
 .qcard{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:16px;cursor:pointer;transition:all .2s;box-shadow:var(--sh)}
 .qcard:hover{border-color:var(--green-m)}
@@ -114,8 +79,6 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 .qcard.done .qchk{background:var(--green);border-color:var(--green);color:#fff}
 .qname{font-size:13px;line-height:1.4;color:var(--text)}
 .qcard.done .qname{color:var(--text-2)}
-
-/* Todos */
 .cat-block{margin-bottom:24px}
 .cat-hdr{display:flex;align-items:center;gap:10px;margin-bottom:8px}
 .cat-pill{font-size:11px;font-weight:500;padding:3px 10px;border-radius:20px;font-family:'DM Mono',monospace;letter-spacing:.04em}
@@ -129,18 +92,12 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 .tchk.done{background:var(--green);border-color:var(--green);color:#fff}
 .ttext{flex:1;font-size:14px;line-height:1.5}
 .ttext.done{text-decoration:line-through;color:var(--text-3)}
-
-/* Completed section toggle */
 .completed-toggle{display:flex;align-items:center;gap:8px;padding:10px 0 6px;cursor:pointer;color:var(--text-3);font-size:13px;user-select:none;border:none;background:none;font-family:'DM Sans',sans-serif;width:100%}
 .completed-toggle:hover{color:var(--text-2)}
 .toggle-arrow{font-size:10px;transition:transform .2s}
 .toggle-arrow.open{transform:rotate(90deg)}
 .completed-section{display:none}.completed-section.open{display:block}
-
-/* Empty */
 .empty{text-align:center;padding:30px;color:var(--text-3);font-size:13px;background:var(--surface);border:1px dashed var(--border-strong);border-radius:var(--r)}
-
-/* Mobile */
 @media(max-width:680px){
   .shell{grid-template-columns:1fr}
   .sidebar{position:fixed;bottom:0;left:0;right:0;top:auto;height:auto;flex-direction:row;padding:10px 0 max(10px,env(safe-area-inset-bottom));border-right:none;border-top:1px solid var(--border);z-index:100}
@@ -154,8 +111,6 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 </style>
 </head>
 <body>
-
-<!-- Loading screen — shown until Sheet data arrives -->
 <div class="loading" id="loading">
   <div class="loading-dot"></div>
   <div class="loading-label">Loading your data…</div>
@@ -191,88 +146,35 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
       </button>
     </div>
   </nav>
-
   <main class="main">
-    <!-- DAILY -->
     <div id="page-daily" class="page active">
-      <div class="page-header">
-        <div class="page-title">Daily habits</div>
-        <div class="page-sub" id="daily-sub"></div>
-      </div>
-      <div class="add-bar">
-        <input type="text" id="daily-input" placeholder="Add a habit…" onkeydown="if(event.key==='Enter')addHabit('daily')">
-        <button onclick="addHabit('daily')">Add</button>
-      </div>
-      <div id="daily-summary"></div>
-      <div id="daily-list"></div>
+      <div class="page-header"><div class="page-title">Daily habits</div><div class="page-sub" id="daily-sub"></div></div>
+      <div class="add-bar"><input type="text" id="daily-input" placeholder="Add a habit…" onkeydown="if(event.key==='Enter')addHabit('daily')"><button onclick="addHabit('daily')">Add</button></div>
+      <div id="daily-summary"></div><div id="daily-list"></div>
     </div>
-
-    <!-- WEEKLY -->
     <div id="page-weekly" class="page">
-      <div class="page-header">
-        <div class="page-title">Weekly habits</div>
-        <div class="page-sub" id="weekly-sub"></div>
-      </div>
-      <div class="add-bar">
-        <input type="text" id="weekly-input" placeholder="Add a habit…" onkeydown="if(event.key==='Enter')addHabit('weekly')">
-        <select id="weekly-target">
-          <option value="1">1×/wk</option>
-          <option value="2">2×/wk</option>
-          <option value="3" selected>3×/wk</option>
-          <option value="4">4×/wk</option>
-          <option value="5">5×/wk</option>
-          <option value="7">7×/wk</option>
-        </select>
-        <button onclick="addHabit('weekly')">Add</button>
-      </div>
+      <div class="page-header"><div class="page-title">Weekly habits</div><div class="page-sub" id="weekly-sub"></div></div>
+      <div class="add-bar"><input type="text" id="weekly-input" placeholder="Add a habit…" onkeydown="if(event.key==='Enter')addHabit('weekly')"><select id="weekly-target"><option value="1">1×/wk</option><option value="2">2×/wk</option><option value="3" selected>3×/wk</option><option value="4">4×/wk</option><option value="5">5×/wk</option><option value="7">7×/wk</option></select><button onclick="addHabit('weekly')">Add</button></div>
       <div id="weekly-list"></div>
     </div>
-
-    <!-- QUARTERLY -->
     <div id="page-quarterly" class="page">
-      <div class="page-header">
-        <div class="page-title">Quarterly goals</div>
-        <div class="page-sub" id="quarterly-sub"></div>
-      </div>
-      <div class="add-bar">
-        <input type="text" id="quarterly-input" placeholder="Add a goal…" onkeydown="if(event.key==='Enter')addHabit('quarterly')">
-        <button onclick="addHabit('quarterly')">Add</button>
-      </div>
-      <div id="quarterly-summary"></div>
-      <div id="quarterly-list"></div>
+      <div class="page-header"><div class="page-title">Quarterly goals</div><div class="page-sub" id="quarterly-sub"></div></div>
+      <div class="add-bar"><input type="text" id="quarterly-input" placeholder="Add a goal…" onkeydown="if(event.key==='Enter')addHabit('quarterly')"><button onclick="addHabit('quarterly')">Add</button></div>
+      <div id="quarterly-summary"></div><div id="quarterly-list"></div>
     </div>
-
-    <!-- TODOS -->
     <div id="page-todos" class="page">
-      <div class="page-header">
-        <div class="page-title">To-dos</div>
-        <div class="page-sub" id="todos-sub"></div>
-      </div>
-      <div class="add-bar">
-        <input type="text" id="todo-input" placeholder="Add a task…" onkeydown="if(event.key==='Enter')addTodo()">
-        <select id="todo-cat">
-          <option value="Personal">Personal</option>
-          <option value="Work">Work</option>
-          <option value="Campaign">Campaign</option>
-          <option value="Health">Health</option>
-          <option value="Finance">Finance</option>
-          <option value="Home">Home</option>
-          <option value="Other">Other</option>
-        </select>
-        <button onclick="addTodo()">Add</button>
-      </div>
+      <div class="page-header"><div class="page-title">To-dos</div><div class="page-sub" id="todos-sub"></div></div>
+      <div class="add-bar"><input type="text" id="todo-input" placeholder="Add a task…" onkeydown="if(event.key==='Enter')addTodo()"><select id="todo-cat"><option value="Personal">Personal</option><option value="Work">Work</option><option value="Campaign">Campaign</option><option value="Health">Health</option><option value="Finance">Finance</option><option value="Home">Home</option><option value="Other">Other</option></select><button onclick="addTodo()">Add</button></div>
       <div id="todo-list"></div>
     </div>
   </main>
 </div>
 
-<!-- Config modal -->
 <div id="config-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:200;align-items:center;justify-content:center;padding:20px">
   <div style="background:var(--surface);border-radius:var(--r);padding:28px;max-width:480px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,0.2)">
-    <div style="font-size:16px;font-weight:500;margin-bottom:6px">Configure Google Sheets sync</div>
+    <div style="font-size:16px;font-weight:500;margin-bottom:6px">Configure sync</div>
     <div style="font-size:13px;color:var(--text-2);margin-bottom:18px;line-height:1.6">Paste your Apps Script Web App URL below.</div>
-    <input type="text" id="script-url-input" placeholder="https://script.google.com/macros/s/…/exec"
-      style="width:100%;padding:10px 12px;border:1px solid var(--border-strong);border-radius:var(--r-sm);font-family:'DM Mono',monospace;font-size:12px;color:var(--text);background:var(--bg);outline:none;margin-bottom:14px">
+    <input type="text" id="script-url-input" placeholder="https://script.google.com/macros/s/…/exec" style="width:100%;padding:10px 12px;border:1px solid var(--border-strong);border-radius:var(--r-sm);font-family:'DM Mono',monospace;font-size:12px;color:var(--text);background:var(--bg);outline:none;margin-bottom:14px">
     <div style="display:flex;gap:8px;justify-content:flex-end">
       <button onclick="closeConfig()" style="padding:8px 16px;border:1px solid var(--border-strong);border-radius:var(--r-sm);background:none;font-family:'DM Sans',sans-serif;font-size:13px;cursor:pointer;color:var(--text-2)">Cancel</button>
       <button onclick="saveConfig()" style="padding:8px 16px;background:var(--text);color:#fff;border:none;border-radius:var(--r-sm);font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;cursor:pointer">Save & sync</button>
@@ -281,75 +183,39 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 </div>
 
 <script>
-const HARDCODED_URL = 'https://script.google.com/macros/s/AKfycbyH-m6T2RtxcLb_F5yXG_XgyQT_O0LIoIQaqC3NLUS7JQ8yFhlGT398zP31V_XVaYvv/exec';
+const HARDCODED_URL='https://script.google.com/macros/s/AKfycby61V4olW--IvL3CcLPt1mxE8MuoAVrYz1dh6qZI5eDds6cqOFLCpllaKjiuBxTjBE/exec';
+const TODAY=new Date();
+function localDateKey(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
+const TODAY_KEY=localDateKey(TODAY);
+const DAYS=['Su','Mo','Tu','We','Th','Fr','Sa'];
+const BACKDATE_DAYS=3;
+const CAT_STYLE={Personal:{bg:'#F0EEFB',color:'#3C3489'},Work:{bg:'#EBF2FC',color:'#185FA5'},Campaign:{bg:'#FBF0EC',color:'#8C3418'},Health:{bg:'#E8F5EE',color:'#1E6040'},Finance:{bg:'#FDF3E3',color:'#7A4A0A'},Home:{bg:'#FBF0EC',color:'#8C3418'},Other:{bg:'#F4F3F0',color:'#4A4A44'}};
+const CAT_ORDER=['Personal','Work','Campaign','Health','Finance','Home','Other'];
 
-const TODAY = new Date();
-function localDateKey(d){ return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
-const TODAY_KEY = localDateKey(TODAY);
-const DAYS = ['Su','Mo','Tu','We','Th','Fr','Sa'];
-const BACKDATE_DAYS = 3;
+let S={dailyHabits:[],weeklyHabits:[],quarterlyHabits:[],todos:[],checks:{}};
+let syncTimer=null;
+let completedOpen={};
 
-const CAT_STYLE = {
-  Personal:{bg:'#F0EEFB',color:'#3C3489'},
-  Work:{bg:'#EBF2FC',color:'#185FA5'},
-  Campaign:{bg:'#FBF0EC',color:'#8C3418'},
-  Health:{bg:'#E8F5EE',color:'#1E6040'},
-  Finance:{bg:'#FDF3E3',color:'#7A4A0A'},
-  Home:{bg:'#FBF0EC',color:'#8C3418'},
-  Other:{bg:'#F4F3F0',color:'#4A4A44'}
-};
-const CAT_ORDER = ['Personal','Work','Campaign','Health','Finance','Home','Other'];
+function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,5);}
+function weekStart(){const d=new Date(TODAY);d.setHours(0,0,0,0);d.setDate(d.getDate()-d.getDay());return d;}
+function quarterKey(){return TODAY.getFullYear()+'-Q'+(Math.floor(TODAY.getMonth()/3)+1);}
+function quarterLabel(){const q=Math.floor(TODAY.getMonth()/3)+1;const mo=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];const s=[0,3,6,9],e=[2,5,8,11];return `Q${q} ${TODAY.getFullYear()} · ${mo[s[q-1]]}–${mo[e[q-1]]}`;}
+function getBackdateDays(){const days=[];for(let i=1;i<=BACKDATE_DAYS;i++){const d=new Date(TODAY);d.setDate(d.getDate()-i);days.push({key:localDateKey(d),label:d.toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'})});}return days;}
 
-// DEFAULTS only used if Sheet is completely empty (first ever load)
-const DEFAULTS = {
-  dailyHabits:[], weeklyHabits:[], quarterlyHabits:[], todos:[], checks:{}
-};
+// ── SYNC ──────────────────────────────────────────────────────────────────────
+function setSyncStatus(s,l){document.getElementById('sync-dot').className='sync-dot'+(s?' '+s:'');document.getElementById('sync-label').textContent=l;}
+function getScriptURL(){return HARDCODED_URL||localStorage.getItem('tracker-script-url')||'';}
+function showApp(){document.getElementById('loading').style.display='none';document.getElementById('app').style.display='grid';}
 
-let S = JSON.parse(JSON.stringify(DEFAULTS));
-let syncTimer = null;
-let completedOpen = {};
-
-function uid(){ return Date.now().toString(36)+Math.random().toString(36).slice(2,5); }
-function weekStart(){ const d=new Date(TODAY);d.setHours(0,0,0,0);d.setDate(d.getDate()-d.getDay());return d; }
-function quarterKey(){ return TODAY.getFullYear()+'-Q'+(Math.floor(TODAY.getMonth()/3)+1); }
-function quarterLabel(){
-  const q=Math.floor(TODAY.getMonth()/3)+1;
-  const mo=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-  const s=[0,3,6,9],e=[2,5,8,11];
-  return `Q${q} ${TODAY.getFullYear()} · ${mo[s[q-1]]}–${mo[e[q-1]]}`;
-}
-
-function getBackdateDays(){
-  const days=[];
-  for(let i=1;i<=BACKDATE_DAYS;i++){
-    const d=new Date(TODAY);d.setDate(d.getDate()-i);
-    days.push({key:localDateKey(d),label:d.toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'})});
-  }
-  return days;
-}
-
-// ── SYNC — Sheet is the single source of truth ────────────────────────────────
-function setSyncStatus(status,label){
-  document.getElementById('sync-dot').className='sync-dot'+(status?' '+status:'');
-  document.getElementById('sync-label').textContent=label;
-}
-function getScriptURL(){ return HARDCODED_URL||localStorage.getItem('tracker-script-url')||''; }
-
-function showApp(){
-  document.getElementById('loading').style.display='none';
-  document.getElementById('app').style.display='grid';
-}
-
+// LOAD via JSONP (GET, no CORS issue)
 function loadFromSheets(){
   const url=getScriptURL();
-  if(!url){ setSyncStatus('','Not configured'); showApp(); return Promise.resolve(false); }
+  if(!url){setSyncStatus('','Not configured');showApp();return Promise.resolve(false);}
   setSyncStatus('syncing','Loading…');
   return new Promise((resolve)=>{
-    const cbName='_trackerCb_'+Date.now();
+    const cbName='_cb_'+Date.now();
     const script=document.createElement('script');
-    const timer=setTimeout(()=>{
-      cleanup(); setSyncStatus('err','Timed out'); showApp(); resolve(false);
-    },10000);
+    const timer=setTimeout(()=>{cleanup();setSyncStatus('err','Timed out');showApp();resolve(false);},12000);
     function cleanup(){clearTimeout(timer);delete window[cbName];if(script.parentNode)script.parentNode.removeChild(script);}
     window[cbName]=function(j){
       cleanup();
@@ -362,13 +228,10 @@ function loadFromSheets(){
           if(j.data.checks)S.checks=j.data.checks;
           setSyncStatus('ok','Synced');
         } else {
-          // Truly empty sheet — first ever load, nothing to show
           setSyncStatus('ok','Ready');
         }
-        showApp(); resolve(true);
-      } else {
-        setSyncStatus('err','Load failed'); showApp(); resolve(false);
-      }
+        showApp();resolve(true);
+      } else {setSyncStatus('err','Load failed');showApp();resolve(false);}
     };
     script.onerror=()=>{cleanup();setSyncStatus('err','Could not reach script');showApp();resolve(false);};
     script.src=url+'?action=load&callback='+cbName;
@@ -376,94 +239,54 @@ function loadFromSheets(){
   });
 }
 
+// SAVE via POST (handles large payloads, no URL limit)
 async function saveToSheets(){
   const url=getScriptURL();if(!url)return;
   setSyncStatus('syncing','Saving…');
   const state={dailyHabits:S.dailyHabits,weeklyHabits:S.weeklyHabits,quarterlyHabits:S.quarterlyHabits,todos:S.todos,checks:S.checks};
   try{
-    fetch(url+'?action=saveAll&state='+encodeURIComponent(JSON.stringify(state)));
-    setSyncStatus('ok','Saved · '+new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}));
+    const resp=await fetch(url,{
+      method:'POST',
+      headers:{'Content-Type':'text/plain'}, // text/plain avoids CORS preflight
+      body:JSON.stringify({action:'saveAll',state})
+    });
+    const j=await resp.json();
+    if(j.ok){setSyncStatus('ok','Saved · '+new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}));}
+    else{setSyncStatus('err','Save error');}
   }catch(e){setSyncStatus('err','Save failed');}
 }
 
-// Save only goes to Sheets — no localStorage
-function scheduleSave(){ if(syncTimer)clearTimeout(syncTimer); syncTimer=setTimeout(saveToSheets,1200); }
-function save(){ scheduleSave(); }
+function scheduleSave(){if(syncTimer)clearTimeout(syncTimer);syncTimer=setTimeout(saveToSheets,1200);}
+function save(){scheduleSave();}
 
-// ── HABITS ───────────────────────────────────────────────────────────────────
-function addHabit(type){
-  const inp=document.getElementById(type+'-input');
-  const name=inp.value.trim();if(!name)return;
-  const h={id:uid(),name};
-  if(type==='weekly')h.target=parseInt(document.getElementById('weekly-target').value);
-  S[type+'Habits'].push(h);inp.value='';save();render();
-}
-function delHabit(type,id){ S[type+'Habits']=S[type+'Habits'].filter(h=>h.id!==id);delete S.checks[id];save();render(); }
-function toggleCheck(id,key){ if(!S.checks[id])S.checks[id]={};S.checks[id][key]=!S.checks[id][key];save();render(); }
-
-function getStreak(id){
-  const c=S.checks[id]||{};
-  let d=new Date(TODAY),s=0;
-  for(let i=0;i<400;i++){
-    const k=localDateKey(d);
-    if(c[k])s++;else if(k!==TODAY_KEY)break;
-    d.setDate(d.getDate()-1);
-  }
-  return s;
-}
+// ── HABITS ────────────────────────────────────────────────────────────────────
+function addHabit(type){const inp=document.getElementById(type+'-input');const name=inp.value.trim();if(!name)return;const h={id:uid(),name};if(type==='weekly')h.target=parseInt(document.getElementById('weekly-target').value);S[type+'Habits'].push(h);inp.value='';save();render();}
+function delHabit(type,id){S[type+'Habits']=S[type+'Habits'].filter(h=>h.id!==id);delete S.checks[id];save();render();}
+function toggleCheck(id,key){if(!S.checks[id])S.checks[id]={};S.checks[id][key]=!S.checks[id][key];save();render();}
+function getStreak(id){const c=S.checks[id]||{};let d=new Date(TODAY),s=0;for(let i=0;i<400;i++){const k=localDateKey(d);if(c[k])s++;else if(k!==TODAY_KEY)break;d.setDate(d.getDate()-1);}return s;}
 
 // ── TODOS ─────────────────────────────────────────────────────────────────────
-function addTodo(){
-  const inp=document.getElementById('todo-input');
-  const name=inp.value.trim();if(!name)return;
-  const cat=document.getElementById('todo-cat').value;
-  S.todos.push({id:uid(),name,cat,done:false,created:Date.now()});
-  inp.value='';save();render();
-}
-function toggleTodo(id){ const t=S.todos.find(t=>t.id===id);if(t){t.done=!t.done;save();render();} }
-function delTodo(id){ S.todos=S.todos.filter(t=>t.id!==id);save();render(); }
-function toggleCompleted(cat){
-  completedOpen[cat]=!completedOpen[cat];
-  const sec=document.getElementById('completed-'+cat);
-  const arrow=document.getElementById('arrow-'+cat);
-  if(sec)sec.classList.toggle('open',!!completedOpen[cat]);
-  if(arrow)arrow.classList.toggle('open',!!completedOpen[cat]);
-}
+function addTodo(){const inp=document.getElementById('todo-input');const name=inp.value.trim();if(!name)return;const cat=document.getElementById('todo-cat').value;S.todos.push({id:uid(),name,cat,done:false,created:Date.now()});inp.value='';save();render();}
+function toggleTodo(id){const t=S.todos.find(t=>t.id===id);if(t){t.done=!t.done;save();render();}}
+function delTodo(id){S.todos=S.todos.filter(t=>t.id!==id);save();render();}
+function toggleCompleted(cat){completedOpen[cat]=!completedOpen[cat];const sec=document.getElementById('completed-'+cat);const arrow=document.getElementById('arrow-'+cat);if(sec)sec.classList.toggle('open',!!completedOpen[cat]);if(arrow)arrow.classList.toggle('open',!!completedOpen[cat]);}
 
 // ── RENDER ────────────────────────────────────────────────────────────────────
-function render(){ renderDaily();renderWeekly();renderQuarterly();renderTodos(); }
+function render(){renderDaily();renderWeekly();renderQuarterly();renderTodos();}
 
 function renderDaily(){
   const habits=S.dailyHabits;
   document.getElementById('daily-sub').textContent=TODAY.toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric',year:'numeric'});
   const doneN=habits.filter(h=>(S.checks[h.id]||{})[TODAY_KEY]).length;
   const pct=habits.length?Math.round(doneN/habits.length*100):0;
-  document.getElementById('daily-summary').innerHTML=habits.length?`
-    <div class="summary">
-      <div><div class="sum-num">${doneN}<span style="color:var(--text-3);font-size:16px">/${habits.length}</span></div><div class="sum-label">today</div></div>
-      <div class="prog-track"><div class="prog-fill" style="width:${pct}%"></div></div>
-      <div class="sum-pct">${pct}%</div>
-    </div>`:'';
+  document.getElementById('daily-summary').innerHTML=habits.length?`<div class="summary"><div><div class="sum-num">${doneN}<span style="color:var(--text-3);font-size:16px">/${habits.length}</span></div><div class="sum-label">today</div></div><div class="prog-track"><div class="prog-fill" style="width:${pct}%"></div></div><div class="sum-pct">${pct}%</div></div>`:'';
   const pastDays=getBackdateDays();
   document.getElementById('daily-list').innerHTML=habits.length
     ?habits.map(h=>{
         const done=!!(S.checks[h.id]||{})[TODAY_KEY];
         const streak=getStreak(h.id);
-        const backdots=pastDays.map(pd=>{
-          const wasDone=!!(S.checks[h.id]||{})[pd.key];
-          return `<div class="bdate${wasDone?' done':''}" onclick="toggleCheck('${h.id}','${pd.key}')" title="${pd.label}">${pd.label.split(' ')[0]}</div>`;
-        }).join('');
-        return `<div class="hcard${done?' complete':''}">
-          <div style="flex:1;min-width:0">
-            <div style="display:flex;align-items:center;gap:12px">
-              <div class="chk${done?' done':''}" onclick="toggleCheck('${h.id}','${TODAY_KEY}')"></div>
-              <span class="hname${done?' done':''}">${h.name}</span>
-              ${streak>1?`<span class="streak">${streak}d</span>`:''}
-              <button class="del" onclick="delHabit('daily','${h.id}')">×</button>
-            </div>
-            <div class="backdate-row"><span class="bdate-label">Back:</span>${backdots}</div>
-          </div>
-        </div>`;
+        const backdots=pastDays.map(pd=>{const wasDone=!!(S.checks[h.id]||{})[pd.key];return `<div class="bdate${wasDone?' done':''}" onclick="toggleCheck('${h.id}','${pd.key}')" title="${pd.label}">${pd.label.split(' ')[0]}</div>`;}).join('');
+        return `<div class="hcard${done?' complete':''}"><div style="flex:1;min-width:0"><div style="display:flex;align-items:center;gap:12px"><div class="chk${done?' done':''}" onclick="toggleCheck('${h.id}','${TODAY_KEY}')"></div><span class="hname${done?' done':''}">${h.name}</span>${streak>1?`<span class="streak">${streak}d</span>`:''}<button class="del" onclick="delHabit('daily','${h.id}')">×</button></div><div class="backdate-row"><span class="bdate-label">Back:</span>${backdots}</div></div></div>`;
       }).join('')
     :'<div class="empty">No daily habits yet</div>';
 }
@@ -475,49 +298,21 @@ function renderWeekly(){
   document.getElementById('weekly-list').innerHTML=habits.length
     ?habits.map(h=>{
         const target=h.target||1;let done=0;
-        const dots=DAYS.map((l,i)=>{
-          const dd=new Date(ws);dd.setDate(ws.getDate()+i);
-          const dk=localDateKey(dd);
-          const isDone=!!(S.checks[h.id]||{})[dk];
-          const isToday=dk===TODAY_KEY;
-          if(isDone)done++;
-          return `<div class="wdot${isDone?' done':''}${isToday?' today':''}" onclick="toggleCheck('${h.id}','${dk}')" title="${dd.toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'})}">${isDone?'✓':l}</div>`;
-        }).join('');
-        const pct=Math.min(100,Math.round(done/target*100));
-        const complete=done>=target;
-        return `<div class="hcard hcard-weekly${complete?' complete':''}">
-          <div class="hrow">
-            <span class="hname" style="${complete?'color:var(--green)':''}">${h.name}</span>
-            <span style="font-family:'DM Mono',monospace;font-size:11px;color:var(--text-3)">${done}/${target}×</span>
-            <button class="del" style="opacity:1" onclick="delHabit('weekly','${h.id}')">×</button>
-          </div>
-          <div class="prog-track" style="margin:8px 0 0"><div class="prog-fill" style="width:${pct}%"></div></div>
-          <div class="wdots">${dots}</div>
-        </div>`;
+        const dots=DAYS.map((l,i)=>{const dd=new Date(ws);dd.setDate(ws.getDate()+i);const dk=localDateKey(dd);const isDone=!!(S.checks[h.id]||{})[dk];const isToday=dk===TODAY_KEY;if(isDone)done++;return `<div class="wdot${isDone?' done':''}${isToday?' today':''}" onclick="toggleCheck('${h.id}','${dk}')" title="${dd.toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'})}">${isDone?'✓':l}</div>`;}).join('');
+        const pct=Math.min(100,Math.round(done/target*100));const complete=done>=target;
+        return `<div class="hcard hcard-weekly${complete?' complete':''}"><div class="hrow"><span class="hname" style="${complete?'color:var(--green)':''}">${h.name}</span><span style="font-family:'DM Mono',monospace;font-size:11px;color:var(--text-3)">${done}/${target}×</span><button class="del" style="opacity:1" onclick="delHabit('weekly','${h.id}')">×</button></div><div class="prog-track" style="margin:8px 0 0"><div class="prog-fill" style="width:${pct}%"></div></div><div class="wdots">${dots}</div></div>`;
       }).join('')
     :'<div class="empty">No weekly habits yet</div>';
 }
 
 function renderQuarterly(){
-  const habits=S.quarterlyHabits;
-  const qk=quarterKey();
+  const habits=S.quarterlyHabits;const qk=quarterKey();
   document.getElementById('quarterly-sub').textContent=quarterLabel();
   const doneN=habits.filter(h=>(S.checks[h.id]||{})[qk]).length;
   const pct=habits.length?Math.round(doneN/habits.length*100):0;
-  document.getElementById('quarterly-summary').innerHTML=habits.length?`
-    <div class="summary">
-      <div><div class="sum-num">${doneN}<span style="color:var(--text-3);font-size:16px">/${habits.length}</span></div><div class="sum-label">this quarter</div></div>
-      <div class="prog-track"><div class="prog-fill" style="width:${pct}%"></div></div>
-      <div class="sum-pct">${pct}%</div>
-    </div>`:'';
+  document.getElementById('quarterly-summary').innerHTML=habits.length?`<div class="summary"><div><div class="sum-num">${doneN}<span style="color:var(--text-3);font-size:16px">/${habits.length}</span></div><div class="sum-label">this quarter</div></div><div class="prog-track"><div class="prog-fill" style="width:${pct}%"></div></div><div class="sum-pct">${pct}%</div></div>`:'';
   document.getElementById('quarterly-list').innerHTML=habits.length
-    ?`<div class="q-grid">${habits.map(h=>{
-        const done=!!(S.checks[h.id]||{})[qk];
-        return `<div class="qcard${done?' done':''}" onclick="toggleCheck('${h.id}','${qk}')">
-          <div class="qchk">${done?'✓':''}</div>
-          <div class="qname">${h.name}</div>
-        </div>`;
-      }).join('')}</div>`
+    ?`<div class="q-grid">${habits.map(h=>{const done=!!(S.checks[h.id]||{})[qk];return `<div class="qcard${done?' done':''}" onclick="toggleCheck('${h.id}','${qk}')"><div class="qchk">${done?'✓':''}</div><div class="qname">${h.name}</div></div>`;}).join('')}</div>`
     :'<div class="empty">No quarterly goals yet</div>';
 }
 
@@ -529,35 +324,11 @@ function renderTodos(){
   document.getElementById('todos-sub').textContent=total?`${doneN} of ${total} complete`:'All clear';
   document.getElementById('todo-list').innerHTML=activeCats.length
     ?activeCats.map(cat=>{
-        const g=grouped[cat];
-        const cs=CAT_STYLE[cat]||CAT_STYLE.Other;
-        const isOpen=!!completedOpen[cat];
-        const activeItems=g.active.map(t=>`<div class="todo-item">
-          <div class="tchk" onclick="toggleTodo('${t.id}')"></div>
-          <span class="ttext">${t.name}</span>
-          <button class="del" style="opacity:0" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=0" onclick="delTodo('${t.id}')">×</button>
-        </div>`).join('');
-        const doneItems=g.done.map(t=>`<div class="todo-item">
-          <div class="tchk done" onclick="toggleTodo('${t.id}')">✓</div>
-          <span class="ttext done">${t.name}</span>
-          <button class="del" style="opacity:0" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=0" onclick="delTodo('${t.id}')">×</button>
-        </div>`).join('');
-        const completedBlock=g.done.length?`
-          <button class="completed-toggle" onclick="toggleCompleted('${cat}')">
-            <span class="toggle-arrow${isOpen?' open':''}" id="arrow-${cat}">▶</span>
-            ${g.done.length} completed
-          </button>
-          <div class="completed-section${isOpen?' open':''}" id="completed-${cat}">
-            <div class="todo-card" style="margin-bottom:8px">${doneItems}</div>
-          </div>`:'';
-        return `<div class="cat-block">
-          <div class="cat-hdr">
-            <span class="cat-pill" style="background:${cs.bg};color:${cs.color}">${cat}</span>
-            <span class="cat-ct">${g.active.length} active · ${g.done.length} done</span>
-          </div>
-          ${g.active.length?`<div class="todo-card">${activeItems}</div>`:''}
-          ${completedBlock}
-        </div>`;
+        const g=grouped[cat];const cs=CAT_STYLE[cat]||CAT_STYLE.Other;const isOpen=!!completedOpen[cat];
+        const activeItems=g.active.map(t=>`<div class="todo-item"><div class="tchk" onclick="toggleTodo('${t.id}')"></div><span class="ttext">${t.name}</span><button class="del" style="opacity:0" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=0" onclick="delTodo('${t.id}')">×</button></div>`).join('');
+        const doneItems=g.done.map(t=>`<div class="todo-item"><div class="tchk done" onclick="toggleTodo('${t.id}')">✓</div><span class="ttext done">${t.name}</span><button class="del" style="opacity:0" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=0" onclick="delTodo('${t.id}')">×</button></div>`).join('');
+        const completedBlock=g.done.length?`<button class="completed-toggle" onclick="toggleCompleted('${cat}')"><span class="toggle-arrow${isOpen?' open':''}" id="arrow-${cat}">▶</span>${g.done.length} completed</button><div class="completed-section${isOpen?' open':''}" id="completed-${cat}"><div class="todo-card" style="margin-bottom:8px">${doneItems}</div></div>`:'';
+        return `<div class="cat-block"><div class="cat-hdr"><span class="cat-pill" style="background:${cs.bg};color:${cs.color}">${cat}</span><span class="cat-ct">${g.active.length} active · ${g.done.length} done</span></div>${g.active.length?`<div class="todo-card">${activeItems}</div>`:''}${completedBlock}</div>`;
       }).join('')
     :'<div class="empty">No tasks yet — add one above</div>';
 }
@@ -570,43 +341,25 @@ function exportCSV(){
   for(const h of S.quarterlyHabits){const c=S.checks[h.id]||{};for(const[date,val]of Object.entries(c))if(val)rows.push(['quarterly',h.id,h.name,date,'1','']);}
   for(const t of S.todos)rows.push(['todo',t.id,t.name,localDateKey(new Date(t.created)),t.done?'done':'pending',t.cat]);
   const csv=rows.map(r=>r.map(c=>`"${c}"`).join(',')).join('\n');
-  const a=document.createElement('a');
-  a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));
-  a.download=`tracker-${TODAY_KEY}.csv`;a.click();
+  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));a.download=`tracker-${TODAY_KEY}.csv`;a.click();
 }
 
 // ── CONFIG ────────────────────────────────────────────────────────────────────
-function showConfig(){
-  document.getElementById('config-modal').style.display='flex';
-  document.getElementById('script-url-input').value=localStorage.getItem('tracker-script-url')||HARDCODED_URL||'';
-}
-function closeConfig(){ document.getElementById('config-modal').style.display='none'; }
+function showConfig(){document.getElementById('config-modal').style.display='flex';document.getElementById('script-url-input').value=localStorage.getItem('tracker-script-url')||HARDCODED_URL||'';}
+function closeConfig(){document.getElementById('config-modal').style.display='none';}
 async function saveConfig(){
-  const url=document.getElementById('script-url-input').value.trim();
-  if(!url){alert('Please enter a URL');return;}
-  localStorage.setItem('tracker-script-url',url);
-  closeConfig();
-  document.getElementById('loading').style.display='flex';
-  document.getElementById('app').style.display='none';
-  const ok=await loadFromSheets();
-  if(ok)render();
-  else setSyncStatus('err','Could not connect — check URL');
+  const url=document.getElementById('script-url-input').value.trim();if(!url){alert('Please enter a URL');return;}
+  localStorage.setItem('tracker-script-url',url);closeConfig();
+  document.getElementById('loading').style.display='flex';document.getElementById('app').style.display='none';
+  const ok=await loadFromSheets();if(ok)render();else setSyncStatus('err','Could not connect');
 }
 document.getElementById('config-modal').addEventListener('click',function(e){if(e.target===this)closeConfig();});
 
 // ── NAV ───────────────────────────────────────────────────────────────────────
-function showPage(page,el){
-  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
-  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
-  document.getElementById('page-'+page).classList.add('active');
-  el.classList.add('active');
-}
+function showPage(page,el){document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));document.getElementById('page-'+page).classList.add('active');el.classList.add('active');}
 
-// ── INIT — always wait for Sheet, never read localStorage ─────────────────────
-async function init(){
-  const ok=await loadFromSheets();
-  if(ok)render();
-}
+// ── INIT — Sheet is single source of truth, no localStorage reads ─────────────
+async function init(){const ok=await loadFromSheets();if(ok)render();}
 init();
 </script>
 </body>
