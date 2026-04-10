@@ -115,7 +115,6 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
   <div class="loading-dot"></div>
   <div class="loading-label">Loading your data…</div>
 </div>
-
 <div class="shell" id="app" style="display:none">
   <nav class="sidebar">
     <div class="sidebar-logo">Tracker</div>
@@ -169,7 +168,6 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
     </div>
   </main>
 </div>
-
 <div id="config-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:200;align-items:center;justify-content:center;padding:20px">
   <div style="background:var(--surface);border-radius:var(--r);padding:28px;max-width:480px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,0.2)">
     <div style="font-size:16px;font-weight:500;margin-bottom:6px">Configure sync</div>
@@ -181,9 +179,8 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
     </div>
   </div>
 </div>
-
 <script>
-const HARDCODED_URL='https://script.google.com/macros/s/AKfycby61V4olW--IvL3CcLPt1mxE8MuoAVrYz1dh6qZI5eDds6cqOFLCpllaKjiuBxTjBE/exec';
+const HARDCODED_URL='https://script.google.com/macros/s/AKfycbz4FjdzdMO4_NmW_p-G27xCpans_ngAsNe1TZTmRX1ovsIHRlW9UX2VlGSFTAmAfXiC/exec';
 const TODAY=new Date();
 function localDateKey(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
 const TODAY_KEY=localDateKey(TODAY);
@@ -202,58 +199,57 @@ function quarterKey(){return TODAY.getFullYear()+'-Q'+(Math.floor(TODAY.getMonth
 function quarterLabel(){const q=Math.floor(TODAY.getMonth()/3)+1;const mo=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];const s=[0,3,6,9],e=[2,5,8,11];return `Q${q} ${TODAY.getFullYear()} · ${mo[s[q-1]]}–${mo[e[q-1]]}`;}
 function getBackdateDays(){const days=[];for(let i=1;i<=BACKDATE_DAYS;i++){const d=new Date(TODAY);d.setDate(d.getDate()-i);days.push({key:localDateKey(d),label:d.toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'})});}return days;}
 
-// ── SYNC ──────────────────────────────────────────────────────────────────────
+// ── SYNC — all via JSONP GET, no CORS issues ───────────────────────────────────
 function setSyncStatus(s,l){document.getElementById('sync-dot').className='sync-dot'+(s?' '+s:'');document.getElementById('sync-label').textContent=l;}
 function getScriptURL(){return HARDCODED_URL||localStorage.getItem('tracker-script-url')||'';}
 function showApp(){document.getElementById('loading').style.display='none';document.getElementById('app').style.display='grid';}
 
-// LOAD via JSONP (GET, no CORS issue)
-function loadFromSheets(){
-  const url=getScriptURL();
-  if(!url){setSyncStatus('','Not configured');showApp();return Promise.resolve(false);}
-  setSyncStatus('syncing','Loading…');
+function jsonpCall(url){
   return new Promise((resolve)=>{
-    const cbName='_cb_'+Date.now();
+    const cbName='_cb_'+Date.now()+'_'+Math.random().toString(36).slice(2,6);
     const script=document.createElement('script');
-    const timer=setTimeout(()=>{cleanup();setSyncStatus('err','Timed out');showApp();resolve(false);},12000);
+    const timer=setTimeout(()=>{cleanup();resolve({ok:false,error:'timeout'});},12000);
     function cleanup(){clearTimeout(timer);delete window[cbName];if(script.parentNode)script.parentNode.removeChild(script);}
-    window[cbName]=function(j){
-      cleanup();
-      if(j&&j.ok){
-        if(j.data&&Object.keys(j.data).length>0){
-          if(j.data.dailyHabits)S.dailyHabits=j.data.dailyHabits;
-          if(j.data.weeklyHabits)S.weeklyHabits=j.data.weeklyHabits;
-          if(j.data.quarterlyHabits)S.quarterlyHabits=j.data.quarterlyHabits;
-          if(j.data.todos)S.todos=j.data.todos;
-          if(j.data.checks)S.checks=j.data.checks;
-          setSyncStatus('ok','Synced');
-        } else {
-          setSyncStatus('ok','Ready');
-        }
-        showApp();resolve(true);
-      } else {setSyncStatus('err','Load failed');showApp();resolve(false);}
-    };
-    script.onerror=()=>{cleanup();setSyncStatus('err','Could not reach script');showApp();resolve(false);};
-    script.src=url+'?action=load&callback='+cbName;
+    window[cbName]=function(j){cleanup();resolve(j);};
+    script.onerror=()=>{cleanup();resolve({ok:false,error:'network'});};
+    script.src=url+(url.includes('?')?'&':'?')+'callback='+cbName;
     document.head.appendChild(script);
   });
 }
 
-// SAVE via POST (handles large payloads, no URL limit)
+async function loadFromSheets(){
+  const url=getScriptURL();
+  if(!url){setSyncStatus('','Not configured');showApp();return false;}
+  setSyncStatus('syncing','Loading…');
+  const j=await jsonpCall(url+'?action=load');
+  if(j&&j.ok){
+    if(j.data&&Object.keys(j.data).length>0){
+      if(j.data.dailyHabits)S.dailyHabits=j.data.dailyHabits;
+      if(j.data.weeklyHabits)S.weeklyHabits=j.data.weeklyHabits;
+      if(j.data.quarterlyHabits)S.quarterlyHabits=j.data.quarterlyHabits;
+      if(j.data.todos)S.todos=j.data.todos;
+      if(j.data.checks)S.checks=j.data.checks;
+      setSyncStatus('ok','Synced');
+    } else {
+      setSyncStatus('ok','Ready');
+    }
+    showApp();return true;
+  }
+  setSyncStatus('err','Load failed — '+( j.error||'unknown'));
+  showApp();return false;
+}
+
 async function saveToSheets(){
   const url=getScriptURL();if(!url)return;
   setSyncStatus('syncing','Saving…');
   const state={dailyHabits:S.dailyHabits,weeklyHabits:S.weeklyHabits,quarterlyHabits:S.quarterlyHabits,todos:S.todos,checks:S.checks};
-  try{
-    const resp=await fetch(url,{
-      method:'POST',
-      headers:{'Content-Type':'text/plain'}, // text/plain avoids CORS preflight
-      body:JSON.stringify({action:'saveAll',state})
-    });
-    const j=await resp.json();
-    if(j.ok){setSyncStatus('ok','Saved · '+new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}));}
-    else{setSyncStatus('err','Save error');}
-  }catch(e){setSyncStatus('err','Save failed');}
+  const encoded=encodeURIComponent(JSON.stringify(state));
+  const j=await jsonpCall(url+'?action=saveAll&state='+encoded);
+  if(j&&j.ok){
+    setSyncStatus('ok','Saved · '+new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}));
+  } else {
+    setSyncStatus('err','Save failed — '+(j&&j.error?j.error:'unknown'));
+  }
 }
 
 function scheduleSave(){if(syncTimer)clearTimeout(syncTimer);syncTimer=setTimeout(saveToSheets,1200);}
@@ -292,8 +288,7 @@ function renderDaily(){
 }
 
 function renderWeekly(){
-  const habits=S.weeklyHabits;
-  const ws=weekStart();
+  const habits=S.weeklyHabits;const ws=weekStart();
   document.getElementById('weekly-sub').textContent='Week of '+ws.toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'});
   document.getElementById('weekly-list').innerHTML=habits.length
     ?habits.map(h=>{
@@ -333,7 +328,6 @@ function renderTodos(){
     :'<div class="empty">No tasks yet — add one above</div>';
 }
 
-// ── EXPORT ────────────────────────────────────────────────────────────────────
 function exportCSV(){
   const rows=[['type','id','name','date','value','category']];
   for(const h of S.dailyHabits){const c=S.checks[h.id]||{};for(const[date,val]of Object.entries(c))if(val)rows.push(['daily',h.id,h.name,date,'1','']);}
@@ -344,21 +338,18 @@ function exportCSV(){
   const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));a.download=`tracker-${TODAY_KEY}.csv`;a.click();
 }
 
-// ── CONFIG ────────────────────────────────────────────────────────────────────
 function showConfig(){document.getElementById('config-modal').style.display='flex';document.getElementById('script-url-input').value=localStorage.getItem('tracker-script-url')||HARDCODED_URL||'';}
 function closeConfig(){document.getElementById('config-modal').style.display='none';}
 async function saveConfig(){
   const url=document.getElementById('script-url-input').value.trim();if(!url){alert('Please enter a URL');return;}
   localStorage.setItem('tracker-script-url',url);closeConfig();
   document.getElementById('loading').style.display='flex';document.getElementById('app').style.display='none';
-  const ok=await loadFromSheets();if(ok)render();else setSyncStatus('err','Could not connect');
+  const ok=await loadFromSheets();if(ok)render();
 }
 document.getElementById('config-modal').addEventListener('click',function(e){if(e.target===this)closeConfig();});
 
-// ── NAV ───────────────────────────────────────────────────────────────────────
 function showPage(page,el){document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));document.getElementById('page-'+page).classList.add('active');el.classList.add('active');}
 
-// ── INIT — Sheet is single source of truth, no localStorage reads ─────────────
 async function init(){const ok=await loadFromSheets();if(ok)render();}
 init();
 </script>
