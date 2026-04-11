@@ -180,7 +180,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
   </div>
 </div>
 <script>
-const HARDCODED_URL='https://script.google.com/macros/s/AKfycbyVQLpboTlOMqroe7ChiU5sZO0Wfl9KRvRzlzzOS7crYDSoOOln9KgBt-IXAkezH-Uu/exec';
+const HARDCODED_URL='https://script.google.com/macros/s/AKfycbzZ67m1XZ99qoR7ZA-5EVsGZ9m6rrXXy4PAYW9RlB4WWWznHG5_wWGrRPdnT5323n4J/exec';
 const TODAY=new Date();
 function localDateKey(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
 const TODAY_KEY=localDateKey(TODAY);
@@ -243,12 +243,19 @@ async function saveToSheets(){
   const url=getScriptURL();if(!url)return;
   setSyncStatus('syncing','Saving…');
   const state={dailyHabits:S.dailyHabits,weeklyHabits:S.weeklyHabits,quarterlyHabits:S.quarterlyHabits,todos:S.todos,checks:S.checks};
-  const encoded=encodeURIComponent(JSON.stringify(state));
-  const j=await jsonpCall(url+'?action=saveAll&state='+encoded);
-  if(j&&j.ok){
-    setSyncStatus('ok','Saved · '+new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}));
-  } else {
-    setSyncStatus('err','Save failed — '+(j&&j.error?j.error:'unknown'));
+  try{
+    // POST avoids the URL-length limit that breaks JSONP GET saves.
+    // text/plain skips CORS preflight (Apps Script has no doOptions).
+    // Apps Script deployed as "Anyone" returns Access-Control-Allow-Origin: * automatically.
+    const resp=await fetch(url,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify({action:'saveAll',state})});
+    const j=await resp.json();
+    if(j&&j.ok){
+      setSyncStatus('ok','Saved · '+new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}));
+    } else {
+      setSyncStatus('err','Save failed — '+(j&&j.error?j.error:'unknown'));
+    }
+  } catch(err){
+    setSyncStatus('err','Save failed — network');
   }
 }
 
