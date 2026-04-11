@@ -35,8 +35,9 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 .page-title{font-size:22px;font-weight:500;letter-spacing:-.02em;margin-bottom:3px}
 .page-sub{font-size:12px;color:var(--text-3);font-family:'DM Mono',monospace}
 .add-bar{display:flex;gap:8px;margin-bottom:20px;background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:10px 12px;box-shadow:var(--sh)}
-.add-bar input{flex:1;border:none;outline:none;font-family:'DM Sans',sans-serif;font-size:14px;color:var(--text);background:transparent}
-.add-bar input::placeholder{color:var(--text-3)}
+.add-bar input[type=text]{flex:1;border:none;outline:none;font-family:'DM Sans',sans-serif;font-size:14px;color:var(--text);background:transparent}
+.add-bar input[type=text]::placeholder{color:var(--text-3)}
+.add-bar input[type=date]{border:none;outline:none;font-family:'DM Mono',monospace;font-size:12px;color:var(--text-2);background:transparent;cursor:pointer;width:130px;flex-shrink:0}
 .add-bar select{border:none;outline:none;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--text-2);background:transparent;cursor:pointer}
 .add-bar button{padding:6px 14px;background:var(--text);color:#fff;border:none;border-radius:var(--r-sm);font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;cursor:pointer;transition:opacity .15s;white-space:nowrap}
 .add-bar button:hover{opacity:.8}
@@ -98,6 +99,20 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 .toggle-arrow.open{transform:rotate(90deg)}
 .completed-section{display:none}.completed-section.open{display:block}
 .empty{text-align:center;padding:30px;color:var(--text-3);font-size:13px;background:var(--surface);border:1px dashed var(--border-strong);border-radius:var(--r)}
+/* Due date badges */
+.due-badge{font-family:'DM Mono',monospace;font-size:10px;padding:1px 7px;border-radius:20px;background:var(--bg);border:1px solid var(--border);color:var(--text-3);white-space:nowrap;flex-shrink:0}
+.due-badge.overdue{background:#FBF0EC;border-color:var(--coral);color:var(--coral)}
+.due-badge.due-today{background:var(--green-l);border-color:var(--green-m);color:var(--green)}
+.due-badge.due-soon{background:#FDF3E3;border-color:#C47B1E;color:#7A4A0A}
+/* Drag & drop */
+.hcard[draggable=true],.todo-item[draggable=true],.qcard[draggable=true]{cursor:grab}
+.hcard[draggable=true]:active,.todo-item[draggable=true]:active,.qcard[draggable=true]:active{cursor:grabbing}
+.hcard.dragging,.todo-item.dragging,.qcard.dragging{opacity:0.35;border-style:dashed}
+.hcard.drag-over{border-color:var(--blue)!important;background:rgba(37,99,168,0.04)}
+.todo-item.drag-over{background:rgba(37,99,168,0.07)}
+.qcard.drag-over{border-color:var(--blue)!important}
+/* Mobile sync bar */
+#mobile-sync-bar{display:none;align-items:center;gap:6px;padding:8px 16px;font-size:11px;font-family:'DM Mono',monospace;color:var(--text-3);background:var(--surface);border-bottom:1px solid var(--border);margin:-20px -16px 20px;position:sticky;top:0;z-index:50}
 @media(max-width:680px){
   .shell{grid-template-columns:1fr}
   .sidebar{position:fixed;bottom:0;left:0;right:0;top:auto;height:auto;flex-direction:row;padding:10px 0 max(10px,env(safe-area-inset-bottom));border-right:none;border-top:1px solid var(--border);z-index:100}
@@ -107,14 +122,18 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
   .nav-icon{width:20px;height:20px}
   .main{padding:20px 16px 88px}
   .q-grid{grid-template-columns:1fr}
+  #mobile-sync-bar{display:flex}
+  .add-bar input[type=date]{display:none}
 }
 </style>
 </head>
 <body>
+
 <div class="loading" id="loading">
   <div class="loading-dot"></div>
   <div class="loading-label">Loading your data…</div>
 </div>
+
 <div class="shell" id="app" style="display:none">
   <nav class="sidebar">
     <div class="sidebar-logo">Tracker</div>
@@ -145,29 +164,45 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
       </button>
     </div>
   </nav>
+
   <main class="main">
+    <!-- Mobile sync status bar (hidden on desktop) -->
+    <div id="mobile-sync-bar">
+      <div class="sync-dot" id="mobile-sync-dot"></div>
+      <span id="mobile-sync-label">Loading…</span>
+    </div>
+
     <div id="page-daily" class="page active">
       <div class="page-header"><div class="page-title">Daily habits</div><div class="page-sub" id="daily-sub"></div></div>
       <div class="add-bar"><input type="text" id="daily-input" placeholder="Add a habit…" onkeydown="if(event.key==='Enter')addHabit('daily')"><button onclick="addHabit('daily')">Add</button></div>
       <div id="daily-summary"></div><div id="daily-list"></div>
     </div>
+
     <div id="page-weekly" class="page">
       <div class="page-header"><div class="page-title">Weekly habits</div><div class="page-sub" id="weekly-sub"></div></div>
       <div class="add-bar"><input type="text" id="weekly-input" placeholder="Add a habit…" onkeydown="if(event.key==='Enter')addHabit('weekly')"><select id="weekly-target"><option value="1">1×/wk</option><option value="2">2×/wk</option><option value="3" selected>3×/wk</option><option value="4">4×/wk</option><option value="5">5×/wk</option><option value="7">7×/wk</option></select><button onclick="addHabit('weekly')">Add</button></div>
       <div id="weekly-list"></div>
     </div>
+
     <div id="page-quarterly" class="page">
       <div class="page-header"><div class="page-title">Quarterly goals</div><div class="page-sub" id="quarterly-sub"></div></div>
       <div class="add-bar"><input type="text" id="quarterly-input" placeholder="Add a goal…" onkeydown="if(event.key==='Enter')addHabit('quarterly')"><button onclick="addHabit('quarterly')">Add</button></div>
       <div id="quarterly-summary"></div><div id="quarterly-list"></div>
     </div>
+
     <div id="page-todos" class="page">
       <div class="page-header"><div class="page-title">To-dos</div><div class="page-sub" id="todos-sub"></div></div>
-      <div class="add-bar"><input type="text" id="todo-input" placeholder="Add a task…" onkeydown="if(event.key==='Enter')addTodo()"><select id="todo-cat"><option value="Personal">Personal</option><option value="Work">Work</option><option value="Campaign">Campaign</option><option value="Health">Health</option><option value="Finance">Finance</option><option value="Home">Home</option><option value="Other">Other</option></select><button onclick="addTodo()">Add</button></div>
+      <div class="add-bar">
+        <input type="text" id="todo-input" placeholder="Add a task…" onkeydown="if(event.key==='Enter')addTodo()">
+        <input type="date" id="todo-due" title="Optional due date">
+        <select id="todo-cat"><option value="Personal">Personal</option><option value="Work">Work</option><option value="Campaign">Campaign</option><option value="Health">Health</option><option value="Finance">Finance</option><option value="Home">Home</option><option value="Other">Other</option></select>
+        <button onclick="addTodo()">Add</button>
+      </div>
       <div id="todo-list"></div>
     </div>
   </main>
 </div>
+
 <div id="config-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:200;align-items:center;justify-content:center;padding:20px">
   <div style="background:var(--surface);border-radius:var(--r);padding:28px;max-width:480px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,0.2)">
     <div style="font-size:16px;font-weight:500;margin-bottom:6px">Configure sync</div>
@@ -179,6 +214,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
     </div>
   </div>
 </div>
+
 <script>
 const HARDCODED_URL='https://script.google.com/macros/s/AKfycbzZ67m1XZ99qoR7ZA-5EVsGZ9m6rrXXy4PAYW9RlB4WWWznHG5_wWGrRPdnT5323n4J/exec';
 const TODAY=new Date();
@@ -192,6 +228,7 @@ const CAT_ORDER=['Personal','Work','Campaign','Health','Finance','Home','Other']
 let S={dailyHabits:[],weeklyHabits:[],quarterlyHabits:[],todos:[],checks:{}};
 let syncTimer=null;
 let completedOpen={};
+let dragSrc={type:null,id:null,cat:null};
 
 function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,5);}
 function weekStart(){const d=new Date(TODAY);d.setHours(0,0,0,0);d.setDate(d.getDate()-d.getDay());return d;}
@@ -199,8 +236,38 @@ function quarterKey(){return TODAY.getFullYear()+'-Q'+(Math.floor(TODAY.getMonth
 function quarterLabel(){const q=Math.floor(TODAY.getMonth()/3)+1;const mo=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];const s=[0,3,6,9],e=[2,5,8,11];return `Q${q} ${TODAY.getFullYear()} · ${mo[s[q-1]]}–${mo[e[q-1]]}`;}
 function getBackdateDays(){const days=[];for(let i=1;i<=BACKDATE_DAYS;i++){const d=new Date(TODAY);d.setDate(d.getDate()-i);days.push({key:localDateKey(d),label:d.toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'})});}return days;}
 
-// ── SYNC — all via JSONP GET, no CORS issues ───────────────────────────────────
-function setSyncStatus(s,l){document.getElementById('sync-dot').className='sync-dot'+(s?' '+s:'');document.getElementById('sync-label').textContent=l;}
+// ── DRAG & DROP ───────────────────────────────────────────────────────────────
+function onDragStart(e,type,id,cat){
+  dragSrc={type,id,cat:cat||null};
+  e.dataTransfer.effectAllowed='move';
+  e.dataTransfer.setData('text/plain',id);
+  setTimeout(()=>{const el=document.querySelector(`[data-drag-id="${id}"]`);if(el)el.classList.add('dragging');},0);
+}
+function onDragOver(e){e.preventDefault();e.dataTransfer.dropEffect='move';return false;}
+function onDragEnter(e){e.currentTarget.classList.add('drag-over');}
+function onDragLeave(e){e.currentTarget.classList.remove('drag-over');}
+function onDrop(e,type,id,cat){
+  e.stopPropagation();
+  e.currentTarget.classList.remove('drag-over');
+  if(dragSrc.id===id||dragSrc.type!==type)return false;
+  if(type==='todo'&&dragSrc.cat!==cat)return false;
+  const arr=type==='daily'?S.dailyHabits:type==='weekly'?S.weeklyHabits:type==='quarterly'?S.quarterlyHabits:S.todos;
+  const from=arr.findIndex(x=>x.id===dragSrc.id),to=arr.findIndex(x=>x.id===id);
+  if(from===-1||to===-1)return false;
+  const[item]=arr.splice(from,1);arr.splice(to,0,item);
+  save();render();
+  return false;
+}
+function onDragEnd(e){
+  document.querySelectorAll('.dragging').forEach(el=>el.classList.remove('dragging'));
+  document.querySelectorAll('.drag-over').forEach(el=>el.classList.remove('drag-over'));
+}
+
+// ── SYNC ──────────────────────────────────────────────────────────────────────
+function setSyncStatus(s,l){
+  ['sync-dot','mobile-sync-dot'].forEach(id=>{const el=document.getElementById(id);if(el)el.className='sync-dot'+(s?' '+s:'');});
+  ['sync-label','mobile-sync-label'].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent=l;});
+}
 function getScriptURL(){return HARDCODED_URL||localStorage.getItem('tracker-script-url')||'';}
 function showApp(){document.getElementById('loading').style.display='none';document.getElementById('app').style.display='grid';}
 
@@ -235,7 +302,7 @@ async function loadFromSheets(){
     }
     showApp();return true;
   }
-  setSyncStatus('err','Load failed — '+( j.error||'unknown'));
+  setSyncStatus('err','Load failed — '+(j.error||'unknown'));
   showApp();return false;
 }
 
@@ -243,24 +310,33 @@ async function saveToSheets(){
   const url=getScriptURL();if(!url)return;
   setSyncStatus('syncing','Saving…');
   const state={dailyHabits:S.dailyHabits,weeklyHabits:S.weeklyHabits,quarterlyHabits:S.quarterlyHabits,todos:S.todos,checks:S.checks};
-  try{
-    // POST avoids the URL-length limit that breaks JSONP GET saves.
-    // text/plain skips CORS preflight (Apps Script has no doOptions).
-    // Apps Script deployed as "Anyone" returns Access-Control-Allow-Origin: * automatically.
-    const resp=await fetch(url,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify({action:'saveAll',state})});
-    const j=await resp.json();
-    if(j&&j.ok){
-      setSyncStatus('ok','Saved · '+new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}));
-    } else {
-      setSyncStatus('err','Save failed — '+(j&&j.error?j.error:'unknown'));
+  const delays=[0,2000,5000];
+  for(let attempt=0;attempt<3;attempt++){
+    if(attempt>0){
+      await new Promise(r=>setTimeout(r,delays[attempt]));
+      setSyncStatus('syncing',`Retry ${attempt}…`);
     }
-  } catch(err){
-    setSyncStatus('err','Save failed — network');
+    try{
+      const resp=await fetch(url,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify({action:'saveAll',state})});
+      const j=await resp.json();
+      if(j&&j.ok){setSyncStatus('ok','Saved · '+new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}));return;}
+    } catch(_){}
   }
+  setSyncStatus('err','Save failed — network');
 }
 
 function scheduleSave(){if(syncTimer)clearTimeout(syncTimer);syncTimer=setTimeout(saveToSheets,1200);}
 function save(){scheduleSave();}
+
+// ── DUE DATE ──────────────────────────────────────────────────────────────────
+function dueBadge(due){
+  if(!due)return '';
+  const diff=Math.round((new Date(due+'T12:00:00')-new Date(TODAY_KEY+'T12:00:00'))/864e5);
+  if(diff<0)return `<span class="due-badge overdue">⚠ ${due}</span>`;
+  if(diff===0)return `<span class="due-badge due-today">due today</span>`;
+  if(diff<=3)return `<span class="due-badge due-soon">${due}</span>`;
+  return `<span class="due-badge">${due}</span>`;
+}
 
 // ── HABITS ────────────────────────────────────────────────────────────────────
 function addHabit(type){const inp=document.getElementById(type+'-input');const name=inp.value.trim();if(!name)return;const h={id:uid(),name};if(type==='weekly')h.target=parseInt(document.getElementById('weekly-target').value);S[type+'Habits'].push(h);inp.value='';save();render();}
@@ -269,13 +345,26 @@ function toggleCheck(id,key){if(!S.checks[id])S.checks[id]={};S.checks[id][key]=
 function getStreak(id){const c=S.checks[id]||{};let d=new Date(TODAY),s=0;for(let i=0;i<400;i++){const k=localDateKey(d);if(c[k])s++;else if(k!==TODAY_KEY)break;d.setDate(d.getDate()-1);}return s;}
 
 // ── TODOS ─────────────────────────────────────────────────────────────────────
-function addTodo(){const inp=document.getElementById('todo-input');const name=inp.value.trim();if(!name)return;const cat=document.getElementById('todo-cat').value;S.todos.push({id:uid(),name,cat,done:false,created:Date.now()});inp.value='';save();render();}
+function addTodo(){
+  const inp=document.getElementById('todo-input');
+  const name=inp.value.trim();if(!name)return;
+  const cat=document.getElementById('todo-cat').value;
+  const due=document.getElementById('todo-due').value||null;
+  S.todos.push({id:uid(),name,cat,done:false,created:Date.now(),due});
+  inp.value='';document.getElementById('todo-due').value='';
+  save();render();
+}
 function toggleTodo(id){const t=S.todos.find(t=>t.id===id);if(t){t.done=!t.done;save();render();}}
 function delTodo(id){S.todos=S.todos.filter(t=>t.id!==id);save();render();}
 function toggleCompleted(cat){completedOpen[cat]=!completedOpen[cat];const sec=document.getElementById('completed-'+cat);const arrow=document.getElementById('arrow-'+cat);if(sec)sec.classList.toggle('open',!!completedOpen[cat]);if(arrow)arrow.classList.toggle('open',!!completedOpen[cat]);}
 
 // ── RENDER ────────────────────────────────────────────────────────────────────
 function render(){renderDaily();renderWeekly();renderQuarterly();renderTodos();}
+
+function dragAttrs(type,id,cat){
+  const c=cat?`,'${cat}'`:'';
+  return `draggable="true" data-drag-id="${id}" ondragstart="onDragStart(event,'${type}','${id}'${c})" ondragover="onDragOver(event)" ondragenter="onDragEnter(event)" ondragleave="onDragLeave(event)" ondrop="onDrop(event,'${type}','${id}'${c})" ondragend="onDragEnd(event)"`;
+}
 
 function renderDaily(){
   const habits=S.dailyHabits;
@@ -289,7 +378,7 @@ function renderDaily(){
         const done=!!(S.checks[h.id]||{})[TODAY_KEY];
         const streak=getStreak(h.id);
         const backdots=pastDays.map(pd=>{const wasDone=!!(S.checks[h.id]||{})[pd.key];return `<div class="bdate${wasDone?' done':''}" onclick="toggleCheck('${h.id}','${pd.key}')" title="${pd.label}">${pd.label.split(' ')[0]}</div>`;}).join('');
-        return `<div class="hcard${done?' complete':''}"><div style="flex:1;min-width:0"><div style="display:flex;align-items:center;gap:12px"><div class="chk${done?' done':''}" onclick="toggleCheck('${h.id}','${TODAY_KEY}')"></div><span class="hname${done?' done':''}">${h.name}</span>${streak>1?`<span class="streak">${streak}d</span>`:''}<button class="del" onclick="delHabit('daily','${h.id}')">×</button></div><div class="backdate-row"><span class="bdate-label">Back:</span>${backdots}</div></div></div>`;
+        return `<div class="hcard${done?' complete':''}" ${dragAttrs('daily',h.id)}><div style="flex:1;min-width:0"><div style="display:flex;align-items:center;gap:12px"><div class="chk${done?' done':''}" onclick="toggleCheck('${h.id}','${TODAY_KEY}')"></div><span class="hname${done?' done':''}">${h.name}</span>${streak>1?`<span class="streak">${streak}d</span>`:''}<button class="del" onclick="delHabit('daily','${h.id}')">×</button></div><div class="backdate-row"><span class="bdate-label">Back:</span>${backdots}</div></div></div>`;
       }).join('')
     :'<div class="empty">No daily habits yet</div>';
 }
@@ -302,7 +391,7 @@ function renderWeekly(){
         const target=h.target||1;let done=0;
         const dots=DAYS.map((l,i)=>{const dd=new Date(ws);dd.setDate(ws.getDate()+i);const dk=localDateKey(dd);const isDone=!!(S.checks[h.id]||{})[dk];const isToday=dk===TODAY_KEY;if(isDone)done++;return `<div class="wdot${isDone?' done':''}${isToday?' today':''}" onclick="toggleCheck('${h.id}','${dk}')" title="${dd.toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'})}">${isDone?'✓':l}</div>`;}).join('');
         const pct=Math.min(100,Math.round(done/target*100));const complete=done>=target;
-        return `<div class="hcard hcard-weekly${complete?' complete':''}"><div class="hrow"><span class="hname" style="${complete?'color:var(--green)':''}">${h.name}</span><span style="font-family:'DM Mono',monospace;font-size:11px;color:var(--text-3)">${done}/${target}×</span><button class="del" style="opacity:1" onclick="delHabit('weekly','${h.id}')">×</button></div><div class="prog-track" style="margin:8px 0 0"><div class="prog-fill" style="width:${pct}%"></div></div><div class="wdots">${dots}</div></div>`;
+        return `<div class="hcard hcard-weekly${complete?' complete':''}" ${dragAttrs('weekly',h.id)}><div class="hrow"><span class="hname" style="${complete?'color:var(--green)':''}">${h.name}</span><span style="font-family:'DM Mono',monospace;font-size:11px;color:var(--text-3)">${done}/${target}×</span><button class="del" style="opacity:1" onclick="delHabit('weekly','${h.id}')">×</button></div><div class="prog-track" style="margin:8px 0 0"><div class="prog-fill" style="width:${pct}%"></div></div><div class="wdots">${dots}</div></div>`;
       }).join('')
     :'<div class="empty">No weekly habits yet</div>';
 }
@@ -314,7 +403,7 @@ function renderQuarterly(){
   const pct=habits.length?Math.round(doneN/habits.length*100):0;
   document.getElementById('quarterly-summary').innerHTML=habits.length?`<div class="summary"><div><div class="sum-num">${doneN}<span style="color:var(--text-3);font-size:16px">/${habits.length}</span></div><div class="sum-label">this quarter</div></div><div class="prog-track"><div class="prog-fill" style="width:${pct}%"></div></div><div class="sum-pct">${pct}%</div></div>`:'';
   document.getElementById('quarterly-list').innerHTML=habits.length
-    ?`<div class="q-grid">${habits.map(h=>{const done=!!(S.checks[h.id]||{})[qk];return `<div class="qcard${done?' done':''}" onclick="toggleCheck('${h.id}','${qk}')"><div class="qchk">${done?'✓':''}</div><div class="qname">${h.name}</div></div>`;}).join('')}</div>`
+    ?`<div class="q-grid">${habits.map(h=>{const done=!!(S.checks[h.id]||{})[qk];return `<div class="qcard${done?' done':''}" onclick="toggleCheck('${h.id}','${qk}')" ${dragAttrs('quarterly',h.id)}><div class="qchk">${done?'✓':''}</div><div class="qname">${h.name}</div></div>`;}).join('')}</div>`
     :'<div class="empty">No quarterly goals yet</div>';
 }
 
@@ -327,7 +416,9 @@ function renderTodos(){
   document.getElementById('todo-list').innerHTML=activeCats.length
     ?activeCats.map(cat=>{
         const g=grouped[cat];const cs=CAT_STYLE[cat]||CAT_STYLE.Other;const isOpen=!!completedOpen[cat];
-        const activeItems=g.active.map(t=>`<div class="todo-item"><div class="tchk" onclick="toggleTodo('${t.id}')"></div><span class="ttext">${t.name}</span><button class="del" style="opacity:0" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=0" onclick="delTodo('${t.id}')">×</button></div>`).join('');
+        // Sort active: overdue first, then by due date, then undated last
+        const sorted=[...g.active].sort((a,b)=>(a.due||'9999-99-99').localeCompare(b.due||'9999-99-99'));
+        const activeItems=sorted.map(t=>`<div class="todo-item" ${dragAttrs('todo',t.id,cat)}><div class="tchk" onclick="toggleTodo('${t.id}')"></div><span class="ttext">${t.name}</span>${dueBadge(t.due)}<button class="del" style="opacity:0" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=0" onclick="delTodo('${t.id}')">×</button></div>`).join('');
         const doneItems=g.done.map(t=>`<div class="todo-item"><div class="tchk done" onclick="toggleTodo('${t.id}')">✓</div><span class="ttext done">${t.name}</span><button class="del" style="opacity:0" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=0" onclick="delTodo('${t.id}')">×</button></div>`).join('');
         const completedBlock=g.done.length?`<button class="completed-toggle" onclick="toggleCompleted('${cat}')"><span class="toggle-arrow${isOpen?' open':''}" id="arrow-${cat}">▶</span>${g.done.length} completed</button><div class="completed-section${isOpen?' open':''}" id="completed-${cat}"><div class="todo-card" style="margin-bottom:8px">${doneItems}</div></div>`:'';
         return `<div class="cat-block"><div class="cat-hdr"><span class="cat-pill" style="background:${cs.bg};color:${cs.color}">${cat}</span><span class="cat-ct">${g.active.length} active · ${g.done.length} done</span></div>${g.active.length?`<div class="todo-card">${activeItems}</div>`:''}${completedBlock}</div>`;
@@ -336,11 +427,11 @@ function renderTodos(){
 }
 
 function exportCSV(){
-  const rows=[['type','id','name','date','value','category']];
-  for(const h of S.dailyHabits){const c=S.checks[h.id]||{};for(const[date,val]of Object.entries(c))if(val)rows.push(['daily',h.id,h.name,date,'1','']);}
-  for(const h of S.weeklyHabits){const c=S.checks[h.id]||{};for(const[date,val]of Object.entries(c))if(val)rows.push(['weekly',h.id,h.name,date,'1','']);}
-  for(const h of S.quarterlyHabits){const c=S.checks[h.id]||{};for(const[date,val]of Object.entries(c))if(val)rows.push(['quarterly',h.id,h.name,date,'1','']);}
-  for(const t of S.todos)rows.push(['todo',t.id,t.name,localDateKey(new Date(t.created)),t.done?'done':'pending',t.cat]);
+  const rows=[['type','id','name','date','value','category','due']];
+  for(const h of S.dailyHabits){const c=S.checks[h.id]||{};for(const[date,val]of Object.entries(c))if(val)rows.push(['daily',h.id,h.name,date,'1','','']);}
+  for(const h of S.weeklyHabits){const c=S.checks[h.id]||{};for(const[date,val]of Object.entries(c))if(val)rows.push(['weekly',h.id,h.name,date,'1','','']);}
+  for(const h of S.quarterlyHabits){const c=S.checks[h.id]||{};for(const[date,val]of Object.entries(c))if(val)rows.push(['quarterly',h.id,h.name,date,'1','','']);}
+  for(const t of S.todos)rows.push(['todo',t.id,t.name,localDateKey(new Date(t.created)),t.done?'done':'pending',t.cat,t.due||'']);
   const csv=rows.map(r=>r.map(c=>`"${c}"`).join(',')).join('\n');
   const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));a.download=`tracker-${TODAY_KEY}.csv`;a.click();
 }
